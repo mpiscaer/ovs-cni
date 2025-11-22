@@ -61,6 +61,7 @@ Another example with a port which has an interface of type system:
 * `interface_type` (string, optional): type of the interface belongs to ports. if value is "", ovs will use default interface of type 'internal'
 * `configuration_path` (optional): configuration file containing ovsdb
   socket file path, etc.
+* `allowedExternalIds` (map, optional): Add additional ExternalId parameters
 
 
 _*Note:* if `deviceID` is provided, then it is possible to omit `bridge` argument. Bridge will be automatically selected by the CNI plugin by following

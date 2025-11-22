@@ -186,8 +186,8 @@ func getBridgeName(driver *ovsdb.OvsDriver, bridgeName, ovnPort, deviceID string
 	return "", fmt.Errorf("failed to get bridge name")
 }
 
-func attachIfaceToBridge(ovsDriver *ovsdb.OvsBridgeDriver, hostIfaceName string, contIfaceName string, ofportRequest uint, vlanTag uint, trunks []uint, portType string, intfType string, contNetnsPath string, ovnPortName string, contPodUid string) error {
-	err := ovsDriver.CreatePort(hostIfaceName, contNetnsPath, contIfaceName, ovnPortName, ofportRequest, vlanTag, trunks, portType, intfType, contPodUid)
+func attachIfaceToBridge(ovsDriver *ovsdb.OvsBridgeDriver, hostIfaceName string, contIfaceName string, ofportRequest uint, vlanTag uint, trunks []uint, portType string, intfType string, contNetnsPath string, ovnPortName string, contPodUid string, allowedExternalIds map[string]string) error {
+	err := ovsDriver.CreatePort(hostIfaceName, contNetnsPath, contIfaceName, ovnPortName, ofportRequest, vlanTag, trunks, portType, intfType, contPodUid, allowedExternalIds)
 	if err != nil {
 		return err
 	}
@@ -359,7 +359,7 @@ func CmdAdd(args *skel.CmdArgs) error {
 		}
 	}
 
-	if err = attachIfaceToBridge(ovsBridgeDriver, hostIface.Name, contIface.Name, netconf.OfportRequest, vlanTagNum, trunks, portType, netconf.InterfaceType, args.Netns, ovnPort, contPodUid); err != nil {
+	if err = attachIfaceToBridge(ovsBridgeDriver, hostIface.Name, contIface.Name, netconf.OfportRequest, vlanTagNum, trunks, portType, netconf.InterfaceType, args.Netns, ovnPort, contPodUid, netconf.AllowedExternalIds); err != nil {
 		return err
 	}
 	defer func() {

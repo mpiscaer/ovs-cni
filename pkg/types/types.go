@@ -29,17 +29,18 @@ type NetConfs interface {
 // NetConf extends types.NetConf for ovs-cni
 type NetConf struct {
 	types.NetConf
-	BrName                 string   `json:"bridge,omitempty"`
-	VlanTag                *uint    `json:"vlan"`
-	MTU                    int      `json:"mtu"`
-	Trunk                  []*Trunk `json:"trunk,omitempty"`
-	DeviceID               string   `json:"deviceID"`       // PCI address of a VF in valid sysfs format
-	OfportRequest          uint     `json:"ofport_request"` // OpenFlow port number in range 1 to 65,279
-	InterfaceType          string   `json:"interface_type"` // The type of interface on ovs.
-	ConfigurationPath      string   `json:"configuration_path"`
-	SocketFile             string   `json:"socket_file"`
-	LinkStateCheckRetries  int      `json:"link_state_check_retries"`
-	LinkStateCheckInterval int      `json:"link_state_check_interval"`
+	BrName                 string            `json:"bridge,omitempty"`
+	VlanTag                *uint             `json:"vlan"`
+	MTU                    int               `json:"mtu"`
+	Trunk                  []*Trunk          `json:"trunk,omitempty"`
+	DeviceID               string            `json:"deviceID"`       // PCI address of a VF in valid sysfs format
+	OfportRequest          uint              `json:"ofport_request"` // OpenFlow port number in range 1 to 65,279
+	InterfaceType          string            `json:"interface_type"` // The type of interface on ovs.
+	ConfigurationPath      string            `json:"configuration_path"`
+	SocketFile             string            `json:"socket_file"`
+	LinkStateCheckRetries  int               `json:"link_state_check_retries"`
+	LinkStateCheckInterval int               `json:"link_state_check_interval"`
+	AllowedExternalIds     map[string]string `json:"allowedExternalIds,omitempty"`
 }
 
 // MirrorNetConf extends types.NetConf for ovs-mirrors

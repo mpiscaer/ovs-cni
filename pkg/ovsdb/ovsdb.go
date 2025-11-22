@@ -158,13 +158,13 @@ func (ovsd *OvsDriver) ovsdbTransact(ops []ovsdb.Operation) ([]ovsdb.OperationRe
 // **************** OVS driver API ********************
 
 // CreatePort Create an internal port in OVS
-func (ovsd *OvsBridgeDriver) CreatePort(intfName, contNetnsPath, contIfaceName, ovnPortName string, ofportRequest uint, vlanTag uint, trunks []uint, portType string, intfType string, contPodUid string) error {
+func (ovsd *OvsBridgeDriver) CreatePort(intfName, contNetnsPath, contIfaceName, ovnPortName string, ofportRequest uint, vlanTag uint, trunks []uint, portType string, intfType string, contPodUid string, allowedExternalIds map[string]string) error {
 	intfUUID, intfOp, err := createInterfaceOperation(intfName, ofportRequest, ovnPortName, intfType)
 	if err != nil {
 		return err
 	}
 
-	portUUID, portOp, err := createPortOperation(intfName, contNetnsPath, contIfaceName, vlanTag, trunks, portType, intfUUID, contPodUid)
+	portUUID, portOp, err := createPortOperation(intfName, contNetnsPath, contIfaceName, vlanTag, trunks, portType, intfUUID, contPodUid, allowedExternalIds)
 	if err != nil {
 		return err
 	}
@@ -853,7 +853,7 @@ func createInterfaceOperation(intfName string, ofportRequest uint, ovnPortName s
 	return intfUUID, &intfOp, nil
 }
 
-func createPortOperation(intfName, contNetnsPath, contIfaceName string, vlanTag uint, trunks []uint, portType string, intfUUID ovsdb.UUID, contPodUid string) (ovsdb.UUID, *ovsdb.Operation, error) {
+func createPortOperation(intfName, contNetnsPath, contIfaceName string, vlanTag uint, trunks []uint, portType string, intfUUID ovsdb.UUID, contPodUid string, allowedExternalIds map[string]string) (ovsdb.UUID, *ovsdb.Operation, error) {
 	portUUIDStr := intfName
 	portUUID := ovsdb.UUID{GoUUID: portUUIDStr}
 
@@ -876,7 +876,7 @@ func createPortOperation(intfName, contNetnsPath, contIfaceName string, vlanTag 
 		return ovsdb.UUID{}, nil, err
 	}
 
-	oMap, err := ovsdb.NewOvsMap(map[string]string{
+	defaultIDs := map[string]string{
 		"contPodUid": contPodUid,
 		"contNetns":  contNetnsPath,
 		"contIface":  contIfaceName,
@@ -885,6 +885,12 @@ func createPortOperation(intfName, contNetnsPath, contIfaceName string, vlanTag 
 	if err != nil {
 		return ovsdb.UUID{}, nil, err
 	}
+
+	oMap, err := ovsdb.NewOvsMap(extendExternalIds(defaultIDs, allowedExternalIds))
+	if err != nil {
+		return ovsdb.UUID{}, nil, err
+	}
+
 	port["external_ids"] = oMap
 
 	// Add an entry in Port table
@@ -896,6 +902,19 @@ func createPortOperation(intfName, contNetnsPath, contIfaceName string, vlanTag 
 	}
 
 	return portUUID, &portOp, nil
+}
+
+func extendExternalIds(defaultIDs map[string]string, allowedExternalIds map[string]string) map[string]string {
+	merged := make(map[string]string, len(defaultIDs)+len(allowedExternalIds))
+	for k, v := range defaultIDs {
+		merged[k] = v
+	}
+
+	for k, v := range allowedExternalIds {
+		merged[k] = v
+	}
+
+	return merged
 }
 
 func attachPortOperation(portUUID ovsdb.UUID, bridgeName string) *ovsdb.Operation {
